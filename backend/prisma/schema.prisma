@@ -14,3 +14,246 @@ model HealthCheck {
   message   String
   createdAt DateTime @default(now())
 }
+
+enum UserCategory {
+  TECHNICAL
+  MANAGER
+  EMPLOYEE
+}
+
+enum MaintenanceType {
+  PREVENTIVE
+  CORRECTIVE
+}
+
+enum RequestStage {
+  NEW
+  IN_PROGRESS
+  REPAIRED
+  SCRAP
+}
+
+model Company {
+  id         Int        @id @default(autoincrement())
+  name       String
+  location   String?
+
+  departments Department[]
+  teams       Team[]
+  categories  EquipmentCategory[]
+  equipments  Equipment[]
+  requests    MaintenanceRequest[]
+
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@map("company")
+}
+
+model Department {
+  id        Int     @id @default(autoincrement())
+  name      String
+
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  users     User[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name])
+  @@map("department")
+}
+
+model User {
+  id            Int          @id @default(autoincrement())
+  ename         String
+  eemail        String       @unique
+  epass         String
+  category      UserCategory
+
+  // normalize edept -> Department relation
+  departmentId  Int?
+  department    Department?  @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
+  // reverse relations
+  createdRequests MaintenanceRequest[] @relation("RequestsCreatedBy")
+  assignedRequests MaintenanceRequest[] @relation("RequestsTechnician")
+  equipmentsUsed  Equipment[]          @relation("EquipmentUsedBy")
+  equipmentsTechnician Equipment[]     @relation("EquipmentTechnician")
+
+  teamId Int?
+  team   Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user")
+}
+
+model Team {
+  id        Int     @id @default(autoincrement())
+  teamName  String
+
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // normalized members
+  users   User[]
+
+  // reverse relations
+  responsibleCategories EquipmentCategory[] @relation("CategoryResponsibleTeam")
+  responsibleEquipments Equipment[]        @relation("EquipmentMaintenanceTeam")
+  requests              MaintenanceRequest[] @relation("RequestTeam")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, teamName])
+  @@map("teams")
+}
+
+model WorkCenter {
+  id        Int     @id @default(autoincrement())
+  name      String
+
+  equipments Equipment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([name])
+  @@map("work_center")
+}
+
+model EquipmentCategory {
+  id        Int     @id @default(autoincrement())
+  name      String
+
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // responsible_team
+  responsibleTeamId Int?
+  responsibleTeam   Team? @relation("CategoryResponsibleTeam", fields: [responsibleTeamId], references: [id], onDelete: SetNull)
+
+  equipments Equipment[]
+
+   requests MaintenanceRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, name])
+  @@map("equipment_category")
+}
+
+model Equipment {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+
+  companyId   Int
+  company     Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // category (fk)
+  categoryId  Int
+  category    EquipmentCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  // used_by (nullable fk to User)
+  usedById    Int?
+  usedBy      User?  @relation("EquipmentUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
+
+  // maintenance_team (nullable fk)
+  maintenanceTeamId Int?
+  maintenanceTeam   Team? @relation("EquipmentMaintenanceTeam", fields: [maintenanceTeamId], references: [id], onDelete: SetNull)
+
+  // assign_dt (nullable)
+  assignDt    DateTime?
+
+  // technician (nullable fk to User)
+  technicianId Int?
+  technician   User? @relation("EquipmentTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+
+  isScrapped  Boolean  @default(false)
+  scrappedDt  DateTime?
+
+  usedInLocation String?
+  workCenterId   Int?
+  workCenter     WorkCenter? @relation(fields: [workCenterId], references: [id], onDelete: SetNull)
+
+  // 1:1 scrap record (optional)
+  scrappedRecord ScrappedEquipment?
+
+  requests    MaintenanceRequest[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([maintenanceTeamId])
+  @@map("equipment")
+}
+
+model ScrappedEquipment {
+  // you said: scrappped_eq { id(fk to equipment) }
+  // Model as 1:1 where PK is also FK to Equipment
+  equipmentId Int      @id
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@map("scrappped_eq")
+}
+
+model MaintenanceRequest {
+  id        Int      @id @default(autoincrement())
+
+  // created_by (fk to user)
+  createdById Int
+  createdBy   User   @relation("RequestsCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  // equipment (fk)
+  equipmentId Int
+  equipment   Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  // category (keeping as text because you already have EquipmentCategory; can later convert to FK if needed)
+  categoryId    Int?
+  category EquipmentCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  requestDt   DateTime @default(now())
+
+  maintenanceType MaintenanceType
+
+  // team (fk)
+  teamId     Int?
+  team       Team?   @relation("RequestTeam", fields: [teamId], references: [id], onDelete: SetNull)
+
+  // technician (fk)
+  technicianId Int?
+  technician   User? @relation("RequestsTechnician", fields: [technicianId], references: [id], onDelete: SetNull)
+
+  scheduledDt DateTime?
+  durationMin Int?
+
+  // priority (1..5) - enforce in API, DB check constraints not generated by Prisma by default
+  priority    Int      @default(3)
+
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  technicianAssigned Boolean @default(false)
+
+  // stage to support Kanban states
+  stage RequestStage @default(NEW)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([equipmentId, stage])
+  @@index([teamId, stage])
+  @@index([scheduledDt])
+  @@map("maintenance_requests")
+}
