@@ -2,4 +2,4 @@ fastapi
 uvicorn 
 prisma 
 python-dotenv
-email-validator
+redis

@@ -10,6 +10,8 @@ import EquipmentDetailForm from './pages/EquipmentDetailForm';
 import GearGuardLanding from './pages/GearGuardLanding';
 import Dashboard from './pages/Dashboard';
 import WorksheetCommentSection from './pages/WorksheetCommentSection';
+import EquipmentCategoryPage from './pages/EquipmentCategory';
+import MaintenanceTeamPage from './pages/Team';
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard/>} />
        
 
+          <Route path="/equipment-category" element={<EquipmentCategoryPage />} />
+          <Route path="/team" element={<MaintenanceTeamPage />} />
 
         </Routes>
       </div>
