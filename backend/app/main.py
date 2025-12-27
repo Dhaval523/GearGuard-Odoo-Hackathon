@@ -1,25 +1,19 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
-from prisma import Prisma
+from app.db import db
 
-app = FastAPI()
-db = Prisma()
+from app.routers.equipment import router as equipment_router
+from app.routers.requests import router as request_router
+from app.routers.setup import router as setup_router
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     await db.connect()
-
-@app.on_event("shutdown")
-async def shutdown():
+    yield
     await db.disconnect()
 
-@app.get("/health/db")
-async def db_health():
-    record = await db.healthcheck.create(
-        data={"message": "db is working"}
-    )
-    count = await db.healthcheck.count()
-    return {
-        "status": "ok",
-        "inserted_id": record.id,
-        "total_rows": count
-    }
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(equipment_router)
+app.include_router(request_router)
+app.include_router(setup_router)
