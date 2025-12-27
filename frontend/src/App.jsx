@@ -8,6 +8,8 @@ import WorkCenterList from './pages/WorkCenterList';
 import EquipmentListView from './pages/EquipmentList';
 import EquipmentDetailForm from './pages/EquipmentDetailForm';
 import GearGuardLanding from './pages/GearGuardLanding';
+import EquipmentCategoryPage from './pages/EquipmentCategory';
+import MaintenanceTeamPage from './pages/Team';
 
 function App() {
   return (
@@ -21,7 +23,8 @@ function App() {
           <Route path="/work-center" element={<WorkCenterList />} />
           <Route path="/equipment-list" element={<EquipmentListView />} />
           <Route path="/equipment-detail" element={<EquipmentDetailForm />} />
-
+          <Route path="/equipment-category" element={<EquipmentCategoryPage />} />
+          <Route path="/team" element={<MaintenanceTeamPage />} />
 
         </Routes>
       </div>
