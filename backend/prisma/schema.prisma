@@ -58,6 +58,7 @@ model Department {
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   users     User[]
+  equipments Equipment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -165,6 +166,14 @@ model Equipment {
   usedById    Int?
   usedBy      User?  @relation("EquipmentUsedBy", fields: [usedById], references: [id], onDelete: SetNull)
 
+  serialNumber   String?
+  purchaseDate   DateTime?
+  warrantyInfo   String?
+
+  // ownership tracking
+  departmentId   Int?
+  department     Department? @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+
   // maintenance_team (nullable fk)
   maintenanceTeamId Int?
   maintenanceTeam   Team? @relation("EquipmentMaintenanceTeam", fields: [maintenanceTeamId], references: [id], onDelete: SetNull)
@@ -226,6 +235,7 @@ model MaintenanceRequest {
   requestDt   DateTime @default(now())
 
   maintenanceType MaintenanceType
+  subject String
 
   // team (fk)
   teamId     Int?

@@ -1,22 +1,21 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
-from app.models.base import ORMBase
-from app.models.enums import UserCategory
+from app.schemas.base import ORMBase
 
 class UserCreate(BaseModel):
     ename: str
     eemail: str
     epass: str
-    category: UserCategory
+    category: str  # TECHNICAL, MANAGER, EMPLOYEE
     departmentId: Optional[int] = None
-    teamId: Optional[int] = None   # nullable if user can exist without a team
+    teamId: Optional[int] = None  # Link technician to team [file:1]
 
 class UserUpdate(BaseModel):
     ename: Optional[str] = None
     eemail: Optional[str] = None
     epass: Optional[str] = None
-    category: Optional[UserCategory] = None
+    category: Optional[str] = None
     departmentId: Optional[int] = None
     teamId: Optional[int] = None
 
@@ -24,7 +23,7 @@ class UserRead(ORMBase):
     id: int
     ename: str
     eemail: str
-    category: UserCategory
+    category: str
     departmentId: Optional[int] = None
     teamId: Optional[int] = None
     createdAt: datetime
