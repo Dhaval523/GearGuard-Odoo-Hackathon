@@ -34,8 +34,9 @@ import { motion, AnimatePresence } from "framer-motion";
 
 // Import components
 import MaintenanceCalendar from "././Calender";
-import WorksheetCommentSection from "././WorkCenterList"
+import WorksheetCommentSection from "././WorksheetCommentSection"
 import Equipment from "././EquipmentList";
+import MaintenanceTeamPage from "././Team";
 
 const MaintenanceDashboard = () => {
   const [activeMenu, setActiveMenu] = useState("Dashboard");
@@ -390,6 +391,8 @@ const MaintenanceDashboard = () => {
 
         case "Equipment":
         return <Equipment />;
+        case "Teams":
+        return <MaintenanceTeamPage />;
       default:
         return (
           <motion.div
