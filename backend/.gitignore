@@ -1,2 +1,3 @@
 pvenv
 .env
+__pycache__/
