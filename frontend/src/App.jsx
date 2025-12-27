@@ -7,13 +7,15 @@ import './index.css';
 import WorkCenterList from './pages/WorkCenterList';
 import EquipmentListView from './pages/EquipmentList';
 import EquipmentDetailForm from './pages/EquipmentDetailForm';
+import GearGuardLanding from './pages/GearGuardLanding';
 
 function App() {
   return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 font-nunito">
         <Toaster position="top-right" />
         <Routes>
-          <Route path="/" element={<Navigate to="/login" />} />
+        
+          <Route path="/" element={<GearGuardLanding />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/work-center" element={<WorkCenterList />} />
